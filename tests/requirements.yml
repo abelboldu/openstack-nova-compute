@@ -5,3 +5,6 @@
 - name: rabbitmq
   src: https://github.com/abelboldu/ansible-rabbitmq
   version: master
+
+- name: mysql
+  src: geerlingguy.mysql
