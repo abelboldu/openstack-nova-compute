@@ -35,11 +35,10 @@ before_install:
 
 install:
   # Install test requirements
-  - 'pip install -r requirements-devel.txt'
-  - |
-    if [ -f tests/requirements.yml ]; then
-      ansible-galaxy -c install -r tests/requirements.yml
-    fi
+  - sudo apt-get update -qq
+  - sudo apt-get install python-pip -y
+  - sudo pip install ansible
+  - sudo ansible-galaxy install -r tests/requirements.yml
 
 before_script:
   # Build the container under test and run it.
@@ -51,10 +50,11 @@ before_script:
 
   - >-
     docker run
-    --add-host="docker:$(/sbin/ip route | awk '/default/ { print $3 }')"
+    --add-host=dockerhost:`/sbin/ip addr show docker0 | awk '/inet / {print $2}' | cut -d '/' -f1` --detach
     --env="ANSIBLE_LOG_PATH=/var/log/ansible.log"
     --detach
     --name="container"
+    --volume=/etc/ansible/roles:/etc/ansible/roles:rw ${run_opts}
     --volume="${PWD}:/etc/ansible/roles/openstack-nova-compute:rw"
     ${run_opts} ${distribution}-${version}
 
@@ -65,18 +65,18 @@ script:
   # Check syntax of role.
   - >-
     docker exec container ansible-playbook
-    /etc/ansible/roles/openstack-nova-compute/tests/test.yml --syntax-check
+    /etc/ansible/roles/openstack-nova-compute/tests/test_travis.yml --syntax-check
 
   # Run role.
   - >-
     docker exec container ansible-playbook
-    /etc/ansible/roles/openstack-nova-compute/tests/test.yml --diff --verbose
+    /etc/ansible/roles/openstack-nova-compute/tests/test_travis.yml --diff --verbose
 
 
   # Run role again to check idempotence failure.
   - >-
     docker exec container ansible-playbook
-    /etc/ansible/roles/openstack-nova-compute/tests/test.yml --diff --verbose
+    /etc/ansible/roles/openstack-nova-compute/tests/test_travis.yml --diff --verbose
 
 
   # Detect idempotence failure.
