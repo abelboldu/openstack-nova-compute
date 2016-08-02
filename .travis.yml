@@ -51,7 +51,7 @@ before_script:
 
   - >-
     docker run
-    --add-host="docker:$(/sbin/ip route | awk '/default/ { print $3 }')"
+    --add-host=dockerhost:`/sbin/ip addr show docker0 | awk '/inet / {print $2}' | cut -d '/' -f1`
     --detach
     --name="container"
     ${run_opts} ${distribution}-${version}
@@ -61,17 +61,13 @@ script:
   - 'yamllint -c .yamllint.conf .'
 
   # Check syntax of role.
-  - 'ansible-playbook -i container, -c docker tests/test.yml --syntax-check'
+  - 'ansible-playbook -i container, -c docker tests/test_travis.yml --syntax-check'
 
   # Run role.
-  - 'ansible-playbook -i container, -c docker tests/test.yml --diff --verbose'
-
-  # DEBUG
-  - 'docker exec container service status nova-compute'
-  - 'docker exec container sudo cat /var/log/nova/compute.log'
+  - 'ansible-playbook -i container, -c docker tests/test_travis.yml --diff --verbose'
 
   # Run role again to check idempotence failure.
-  - 'ansible-playbook -i container, -c docker tests/test.yml --diff --verbose'
+  - 'ansible-playbook -i container, -c docker tests/test_travis.yml --diff --verbose'
 
   # Detect idempotence failure.
   - 'tail -n 1 ansible.log | grep -Eq "changed=0 +unreachable=0 +failed=0"'
