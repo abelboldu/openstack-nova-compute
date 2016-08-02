@@ -61,16 +61,26 @@ script:
   - 'yamllint -c .yamllint.conf .'
 
   # Check syntax of role.
-  - 'ansible-playbook -i container, -c docker tests/test.yml --syntax-check'
+  - >-
+    docker exec container ansible-playbook
+    /etc/ansible/roles/openstack-nova-compute/tests/test.yml --syntax-check
 
   # Run role.
-  - 'ansible-playbook -i container, -c docker tests/test.yml --diff --verbose'
+  - >-
+    docker exec container ansible-playbook
+    /etc/ansible/roles/openstack-nova-compute/tests/test.yml --diff --verbose
+
 
   # Run role again to check idempotence failure.
-  - 'ansible-playbook -i container, -c docker tests/test.yml --diff --verbose'
+  - >-
+    docker exec container ansible-playbook
+    /etc/ansible/roles/openstack-nova-compute/tests/test.yml --diff --verbose
+
 
   # Detect idempotence failure.
-  - 'tail -n 1 ansible.log | grep -Eq "changed=0 +unreachable=0 +failed=0"'
+  - >-
+    docker exec container
+    tail -n 1 /var/log/ansible.log | grep -q "changed=0  *unreachable=0  *failed=0"
 
 notifications:
   webhooks: 'https://galaxy.ansible.com/api/v1/notifications/'
