@@ -3,7 +3,7 @@
 - name: Daemon reload
   command: 'systemctl daemon-reload'
 
-- name: Restart nova compute
+- name: Stop nova compute
   service:
     name: '{{ nova_compute_service }}'
     state: started

@@ -36,7 +36,7 @@
       when:
         - ansible_selinux
         - ansible_virtualization_type != 'docker'
-    
+
   roles:
     - role: mysql
       mysql_root_password: 'mysqlpassword'

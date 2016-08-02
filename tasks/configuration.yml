@@ -75,7 +75,7 @@
       option: lock_path
       value: /var/lib/nova/tmp
   notify:
-    - Restart nova compute
+    - Stop nova compute
 
 - name: Configure nova compute (2)
   ini_file:
@@ -89,7 +89,7 @@
       option: virt_type
       value: '{{ nova_virt_type }}'
   notify:
-    - Restart nova compute
+    - Stop nova compute
 
 # Changing to 'simple' type to prevent hard dependency on other roles
 # See: http://lists.openstack.org/pipermail/openstack-dev/2015-December/083095.html
@@ -101,3 +101,10 @@
     backrefs: True
   when: ansible_os_family == 'RedHat'
   notify: Daemon reload
+
+- meta: flush_handlers
+
+- name: Start nova compute
+  service:
+    name: '{{ nova_compute_service }}'
+    state: started
