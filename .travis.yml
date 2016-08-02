@@ -66,6 +66,10 @@ script:
   # Run role.
   - 'ansible-playbook -i container, -c docker tests/test.yml --diff --verbose'
 
+  # DEBUG
+  - 'docker exec container service status nova-compute'
+  - 'docker exec container sudo cat /var/log/nova/compute.log'
+
   # Run role again to check idempotence failure.
   - 'ansible-playbook -i container, -c docker tests/test.yml --diff --verbose'
 
