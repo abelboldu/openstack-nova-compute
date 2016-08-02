@@ -52,8 +52,10 @@ before_script:
   - >-
     docker run
     --add-host="docker:$(/sbin/ip route | awk '/default/ { print $3 }')"
+    --env="ANSIBLE_LOG_PATH=/var/log/ansible.log"
     --detach
     --name="container"
+    --volume="${PWD}:/etc/ansible/roles/openstack-nova-compute:rw"
     ${run_opts} ${distribution}-${version}
 
 script:
